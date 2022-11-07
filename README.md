@@ -1,11 +1,25 @@
-## My Project
+## Automate the sending of AWS Audit Manager Assessment Reports
 
-TODO: Fill this README out!
+# Overview
 
-Be sure to:
+Reference solution to automated the sending of AWS Audit Manager assessment report suammry to stakeholde's email inbox
 
-* Change the title in this README
-* Edit your repository description on GitHub
+# Architect Diagaram
+
+![ArchitectureDiagram](./images/AuditManagerBlog.jpeg)
+
+# Prerequistes
+
+You must first complete the following pre-requisites to operationalize configuration for the reports:
+
+* AWS Audit Manager needs to be deployed - Getting started with AWS Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/getting-started.html)
+* Amazon S3 bucket should be set to receive the assessment report summary
+* The solution providers 3 email address that can receive the assessment report, Address Email1 is mandatory
+* The source email cannot be the same for receivers emails
+* Once the solution is deployed, make sure to go to your email inbox and click on the validation link sent by SES
+
+
+
 
 ## Security
 
