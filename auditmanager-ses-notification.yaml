@@ -50,7 +50,6 @@ Metadata:
         default: Register Email Address 3
       ReportBucketName:
         default: Report S3 Bucket Name
-      
 
 Parameters:
   ReportBucketName:
@@ -64,7 +63,7 @@ Parameters:
   RegisterSourceEmail:
     Description: Specify 'true' to register Source Email with AWS Simple Email Service
     Type: String
-    AllowedValues: 
+    AllowedValues:
       - false
       - true
     Default: true
@@ -100,13 +99,13 @@ Parameters:
     Type: String
     AllowedValues:
       - false
-      - true    
+      - true
 Conditions:
-  ShouldRegisterSourceEmail: !Equals 
+  ShouldRegisterSourceEmail: !Equals
     - !Ref RegisterSourceEmail
     - Yes
 
-  ShouldRegisterAddrEmail1: !Equals 
+  ShouldRegisterAddrEmail1: !Equals
     - !Ref RegisterAddrEmail1
     - Yes
 
@@ -126,7 +125,7 @@ Conditions:
       - ''
   ShouldRegisterAddrEmail3: !And
     - !Condition IsThirdEmail
-    - !Equals 
+    - !Equals
         - !Ref RegisterAddrEmail3
         - Yes
 
@@ -134,19 +133,19 @@ Resources:
   AddrEmailIdentity1:
     Condition: ShouldRegisterAddrEmail1
     Type: AWS::SES::EmailIdentity
-    Properties: 
+    Properties:
       EmailIdentity: !Ref AddrEmail1
 
   AddrEmailIdentity2:
     Condition: ShouldRegisterAddrEmail2
     Type: AWS::SES::EmailIdentity
-    Properties: 
+    Properties:
       EmailIdentity: !Ref AddrEmail2
 
   AddrEmailIdentity3:
     Condition: ShouldRegisterAddrEmail3
     Type: AWS::SES::EmailIdentity
-    Properties: 
+    Properties:
       EmailIdentity: !Ref AddrEmail3
 
   SourceSESConfig:
@@ -186,7 +185,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - ses:SendRawEmail
-                Resource: 
+                Resource:
                   - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${SourceEmail}'
                   - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${AddrEmail1}'
         - !If 
@@ -198,10 +197,10 @@ Resources:
                 - Effect: Allow
                   Action:
                     - ses:SendRawEmail
-                  Resource:                     
+                  Resource:
                     - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${AddrEmail2}'
           - !Ref AWS::NoValue
-        - !If 
+        - !If
           - IsThirdEmail
           - PolicyName: !Sub '${AWS::StackName}-${AWS::Region}-AddrEmail3'
             PolicyDocument:
@@ -210,9 +209,9 @@ Resources:
                 - Effect: Allow
                   Action:
                     - ses:SendRawEmail
-                  Resource:                     
+                  Resource:
                     - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${AddrEmail3}'
-          - !Ref AWS::NoValue                
+          - !Ref AWS::NoValue
         - PolicyName: !Sub '${AWS::StackName}-${AWS::Region}-S3LambdaAccess'
           PolicyDocument:
             Version: '2012-10-17'
@@ -362,7 +361,6 @@ Resources:
 
           def lambda_handler(event, context):
               sender = os.environ['source_email']
-              
               recipient1 = os.environ['recipient1']
               recipient2 = os.environ['recipient2']
               recipient3 = os.environ['recipient3']
@@ -373,52 +371,33 @@ Resources:
                   recipients = [recipient1, recipient2]
               else:
                   recipients = [recipient1, recipient2, recipient3]
-                  print(recipients)    
-            
-              
+                  print(recipients)
               subject = "AWS Audit - Report Assessment Report"
-              
               bucket_name = event['Records'][0]['s3']['bucket']['name']
               key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-              
               file_name = os.path.basename(key)
               tmp_filename = '/tmp/' + file_name
               s3.download_file(bucket_name, key, tmp_filename)
-              
               print(file_name)
-
               attachment = tmp_filename
-              
               principal_id = urllib.parse.unquote_plus(event['Records'][0]['userIdentity']['principalId'], encoding='utf-8')
-              
               user = principal_id.split(':')[2]
-              
               body_text = "AWS Audit - Report Assessment Summary\r\n User: " + user
-              
               charset = "utf-8"
               to_recipient = recipients[0]
-              
               msg = MIMEMultipart('mixed')
               msg['Subject'] = subject
               msg['From'] = sender
               msg['To'] = to_recipient
-              
               msg_body = MIMEMultipart('alternative')
-              
               textpart = MIMEText(body_text.encode(charset), 'plain', charset)
               htmlpart = MIMEText(body_text.encode(charset), 'html', charset)
-              
               msg_body.attach(textpart)
               msg_body.attach(htmlpart)
-              
               att = MIMEApplication(open(attachment, 'rb').read())
-              
               att.add_header('Content-Disposition','attachment',filename=os.path.basename(attachment))
-              
               msg.attach(msg_body)
-              
               msg.attach(att)
-              
               try:
                   #Provide the contents of the email.
                   response = ses.send_raw_email(
@@ -428,13 +407,12 @@ Resources:
                           'Data':msg.as_string()
                       },
                   )
-              # Display an error if something goes wrong. 
+              # Display an error if something goes wrong.
               except ClientError as e:
                   print(e.response['Error']['Message'])
               else:
                   print("Email sent! Message ID:"),
                   print(response['MessageId'])
-   
       Environment:
         Variables:
           source_email: !Ref SourceEmail
@@ -460,14 +438,10 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:  !Sub '${ReportBucketName}-SendEmail'
-      RetentionInDays: 30
+      RetentionInDays: 7
 
   LogGropupCustomResourceS3:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:  !Sub '${AWS::StackName}-${AWS::Region}-LambdaCustomResource'
-      RetentionInDays: 30
-
-
-
-  
+      RetentionInDays: 7
