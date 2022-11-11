@@ -1,7 +1,7 @@
 ##################################################################################
 #
 #   Audit Manager:
-#     Receiving Assessment Report Summary through email
+#     Receiving Assesment Report Summary through email
 #
 #   @mlarrais
 #
@@ -9,10 +9,10 @@
 #
 ##################################################################################
 
-
+---
 AWSTemplateFormatVersion: '2010-09-09'
 Description: |
-  CloudFormation template for the Audit Manager blog post. In this blog post, the assessment report summary will be uploaded to Amazon S3 bucket and the user will receive a link to access this file in their email **WARNING** This template creates [AWS::SES::EmailIdentity, AWS::Lambda::Function] and related resources. You will be billed for the AWS resources used if you create a stack from this template.
+  CloudFormation template for the Audit Manager blog post. In this blog post, the assessment report summary will be uploaded to Amazon S3 bucket and the user will receive a link to access this file in their email **WARNING** This template creates [AWS::SES::EmailIdentity, AWS::Lambda::Function, AWS::Logs::LogGroup] and related resources. You will be billed for the AWS resources used if you create a stack from this template.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -231,6 +231,7 @@ Resources:
       ServiceToken: !GetAtt 'S3CustomLambda.Arn'
   S3CustomLambda:
     Type: AWS::Lambda::Function
+    DependsOn: LogGropupCustomResourceS3
     Properties:
       Description: Custom Resource to create event notification in an existing Amazon S3 bucket.
       FunctionName: !Sub '${AWS::StackName}-${AWS::Region}-LambdaCustomResource'
@@ -336,6 +337,7 @@ Resources:
 
   SendEmail:
     Type: AWS::Lambda::Function
+    DependsOn: LogGropupSendEmailLambda
     Properties:
       Code:
         ZipFile: |
@@ -453,6 +455,19 @@ Resources:
       Principal: s3.amazonaws.com
       SourceAccount: !Ref 'AWS::AccountId'
       SourceArn: !Sub 'arn:${AWS::Partition}:s3:::${ReportBucketName}'
+
+  LogGropupSendEmailLambda:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:  !Sub '${ReportBucketName}-SendEmail'
+      RetentionInDays: 30
+
+  LogGropupCustomResourceS3:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:  !Sub '${AWS::StackName}-${AWS::Region}-LambdaCustomResource'
+      RetentionInDays: 30
+
 
 
   
