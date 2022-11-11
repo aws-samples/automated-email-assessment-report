@@ -115,7 +115,7 @@ Conditions:
       - ''
   ShouldRegisterAddrEmail2: !And
     - !Condition IsSecondEmail
-    - !Equals 
+    - !Equals
         - !Ref RegisterAddrEmail2
         - Yes
 
@@ -188,7 +188,7 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${SourceEmail}'
                   - !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${AddrEmail1}'
-        - !If 
+        - !If
           - IsSecondEmail
           - PolicyName: !Sub '${AWS::StackName}-${AWS::Region}-AddrEmail2'
             PolicyDocument:
