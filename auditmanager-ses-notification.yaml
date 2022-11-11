@@ -17,10 +17,13 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Email Addresses
+          default: Source Email Addresses
         Parameters:
           - SourceEmail
           - RegisterSourceEmail
+      - Label:
+          default: Recipients Email Addresses
+        Parameters:          
           - AddrEmail1
           - RegisterAddrEmail1
           - AddrEmail2
