@@ -17,13 +17,13 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Source Email Addresses
+          default: Source Email Address
         Parameters:
           - SourceEmail
           - RegisterSourceEmail
       - Label:
           default: Recipients Email Addresses
-        Parameters:          
+        Parameters:
           - AddrEmail1
           - RegisterAddrEmail1
           - AddrEmail2
@@ -61,10 +61,10 @@ Parameters:
   SourceEmail:
     Description: Specify the email address to use as a source for sending audit manager assessment reports
     Type: String
-    AllowedPattern: (?i)^$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    AllowedPattern: '^$|(?i)^[A-Z0-9._%\+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$'
     ConstraintDescription: Must provide a valid email address.
   RegisterSourceEmail:
-    Description: Specify 'true' to register Source Email with AWS Simple Email Service
+    Description: Specify 'false' if the Source Email is already verified with AWS Simple Email Service
     Type: String
     AllowedValues:
       - false
@@ -73,7 +73,7 @@ Parameters:
   AddrEmail1:
     Description: Specify the first email address to use to receive the assessment report summary.
     Type: String
-    AllowedPattern: (?i)^$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    AllowedPattern: '^$|(?i)^[A-Z0-9._%\+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$'
     ConstraintDescription: Must provide a valid email address.
   RegisterAddrEmail1:
     Description: Specify 'true' to register Email Address 1 with AWS Simple Email Service
@@ -84,7 +84,7 @@ Parameters:
   AddrEmail2:
     Description: Specify the email address to use to receive the assessment report summary.
     Type: String
-    AllowedPattern: (?i)^$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    AllowedPattern: '^$|(?i)^[A-Z0-9._%\+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$'
     ConstraintDescription: Must provide a valid email address.
   RegisterAddrEmail2:
     Description: Specify 'true' to register Email Address 2 with AWS Simple Email Service
@@ -95,7 +95,7 @@ Parameters:
   AddrEmail3:
     Description: Specify the email address to use to receive the assessment report summary.
     Type: String
-    AllowedPattern: (?i)^$|([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)
+    AllowedPattern: '^$|(?i)^[A-Z0-9._%\+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$'
     ConstraintDescription: Must provide a valid email address.
   RegisterAddrEmail3:
     Description: Specify 'true' to register Email Address 3 with AWS Simple Email Service
@@ -233,7 +233,7 @@ Resources:
       ServiceToken: !GetAtt 'S3CustomLambda.Arn'
   S3CustomLambda:
     Type: AWS::Lambda::Function
-    DependsOn: LogGropupCustomResourceS3
+    DependsOn: LogGroupCustomResourceS3
     Properties:
       Description: Custom Resource to create event notification in an existing Amazon S3 bucket.
       FunctionName: !Sub '${AWS::StackName}-${AWS::Region}-LambdaCustomResource'
@@ -339,7 +339,7 @@ Resources:
 
   SendEmail:
     Type: AWS::Lambda::Function
-    DependsOn: LogGropupSendEmailLambda
+    DependsOn: LogGroupSendEmailLambda
     Properties:
       Code:
         ZipFile: |
@@ -437,13 +437,13 @@ Resources:
       SourceAccount: !Ref 'AWS::AccountId'
       SourceArn: !Sub 'arn:${AWS::Partition}:s3:::${ReportBucketName}'
 
-  LogGropupSendEmailLambda:
+  LogGroupSendEmailLambda:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:  !Sub '${ReportBucketName}-SendEmail'
       RetentionInDays: 7
 
-  LogGropupCustomResourceS3:
+  LogGroupCustomResourceS3:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:  !Sub '${AWS::StackName}-${AWS::Region}-LambdaCustomResource'
