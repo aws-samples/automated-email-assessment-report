@@ -44,7 +44,7 @@ Go to [AWS Cloudformation console](https://us-east-1.console.aws.amazon.com/clou
 
 ### Source Blog
 
-Blog Post - Link
+Blog Post - https://aws.amazon.com/blogs/mt/automate-the-sending-of-aws-audit-manager-assessment-reports/
 
 
 ## Security
